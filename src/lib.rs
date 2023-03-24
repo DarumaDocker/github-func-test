@@ -11,6 +11,7 @@ use slack_flows::send_message_to_channel;
 pub async fn run() {
     listen_to_event(
         "DarumaDocker",
+        "DarumaDocker",
         "github-func-test",
         vec!["issue_comment"],
         handler,
