@@ -12,24 +12,20 @@ pub async fn run() {
 }
 
 async fn handler(_qry: HashMap<String, Value>, body: Vec<u8>) {
-    // let _r = text_detection::text_detection(String::from_utf8_lossy(&body).into_owned())
-    //     .await
-    //     .unwrap();
+    // let co = chat::ChatOptions {
+    //     ..Default::default()
+    // };
 
-    let co = chat::ChatOptions {
-        ..Default::default()
-    };
+    // let his = chat::chat_history("test-chat-for-vertex", 0);
+    // log::debug!("{:?}", his);
 
-    let his = chat::chat_history("test-chat-for-vertex", 0);
-    log::debug!("{:?}", his);
+    // match chat::chat(
+    //     "test-chat-for-vertex",
+    //     String::from_utf8_lossy(&body).into_owned().as_str(),
+    //     &co,
+    // )
 
-    match chat::chat(
-        "test-chat-for-vertex",
-        String::from_utf8_lossy(&body).into_owned().as_str(),
-        &co,
-    )
-    .await
-    {
+    match text_detection::text_detection(String::from_utf8_lossy(&body).into_owned()).await {
         Ok(x) => {
             send_response(
                 200,
