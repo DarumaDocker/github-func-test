@@ -18,7 +18,7 @@ async fn handler(_qry: HashMap<String, Value>, body: Vec<u8>) {
     };
 
     let his = chat::chat_history("test-chat-for-vertex", 0);
-    log::debug!("{:?}", his);
+    log::warn!("{:?}", his);
 
     match chat::chat(
         "test-chat-for-vertex",
