@@ -20,3 +20,4 @@ chrono = "0.4.31"
 openai-flows = "0.9"
 async-openai-wasi = "0.16"
 sendgrid-wasi = "0.19"
+wasi-nn = { git = "https://github.com/second-state/wasmedge-wasi-nn", branch = "ggml" }

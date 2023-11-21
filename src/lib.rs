@@ -31,6 +31,7 @@ async fn handler() {
         .unwrap();
     router.insert("/openai", vec![post(openai)]).unwrap();
     router.insert("/email", vec![post(email)]).unwrap();
+    router.insert("/ggml", vec![post(ggml)]).unwrap();
 
     if let Err(e) = route(router).await {
         match e {
@@ -42,6 +43,46 @@ async fn handler() {
             }
         }
     }
+}
+async fn ggml(_headers: Vec<(String, String)>, _qry: HashMap<String, Value>, body: Vec<u8>) {
+    logger::init();
+
+    let input = String::from_utf8_lossy(&body).into_owned();
+
+    let result =
+        wasi_nn::GraphBuilder::new(wasi_nn::GraphEncoding::Ggml, wasi_nn::ExecutionTarget::CPU)
+            .build_from_cache("default");
+    let graph = match result {
+        Ok(graph) => graph,
+        Err(err) => {
+            println!("Failed to build graph: {:?}", err);
+            return;
+        }
+    };
+
+    let mut context = graph.init_execution_context().unwrap();
+
+    let system_prompt = String::from("<<SYS>>You are a helpful, respectful and honest assistant. Always answer as short as possible, while being safe. <</SYS>>");
+
+    let prompt = format!(
+        "<s>[INST] <<SYS>>\n{system_prompt}\n<</SYS>>\n\n{user_message} [/INST]",
+        system_prompt = system_prompt.trim(),
+        user_message = input.trim()
+    );
+
+    let tensor_data = prompt.trim().as_bytes().to_vec();
+    context
+        .set_input(0, wasi_nn::TensorType::U8, &[1], &tensor_data)
+        .unwrap();
+
+    // Execute the inference.
+    context.compute().unwrap();
+
+    // Retrieve the output.
+    let mut output_buffer = vec![0u8; 2048];
+    let output_size = context.get_output(0, &mut output_buffer).unwrap();
+
+    send_response(200, vec![], output_buffer[..output_size].to_vec());
 }
 
 async fn email(_headers: Vec<(String, String)>, qry: HashMap<String, Value>, body: Vec<u8>) {
